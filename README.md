@@ -2,7 +2,7 @@
 
 An end-to-end automated crypto ingestion pipeline and real-time analytical dashboard built with Python, Supabase PostgreSQL, GitHub Actions, and Streamlit.
 
-🔗 **Live App:** [View Telemetry Dashboard](https://<YOUR-CUSTOM-URL>.streamlit.app)
+🔗 **Live App:** [View Telemetry Dashboard](https://crypto-telemetry-pipeline.streamlit.app/)
 
 ---
 
