@@ -1,4 +1,3 @@
-```markdown
 # ⚡ Automated Crypto Market Telemetry & ETL Pipeline
 
 [![Scheduled Crypto ETL Pipeline](https://github.com/samanthaheartmatiga/market-etl-pipeline/actions/workflows/etl.yml/badge.svg)](https://github.com/samanthaheartmatiga/market-etl-pipeline/actions/workflows/etl.yml)
@@ -9,7 +8,7 @@
 
 An end-to-end automated cryptocurrency ingestion engine and analytical telemetry dashboard. The system extracts top-market crypto data on a 10-minute cadence, runs schema and drift validation assertions, loads records idempotently into a cloud PostgreSQL data warehouse, computes rolling window analytics in SQL, and serves an interactive dashboard.
 
-🔗 **Live Production Dashboard:** [crypto-telemetry-pipeline.streamlit.app](https://market-etl-pipeline-uysvb6n5mehqt8wvq2hcgy.streamlit.app)
+🔗 **Live Production Dashboard:** [crypto-telemetry-pipeline.streamlit.app]
 
 ---
 
@@ -134,7 +133,7 @@ WHERE rn = 1;
 ### 1. Clone the Repository
 
 ```bash
-git clone [https://github.com/samanthaheartmatiga/market-etl-pipeline.git](https://github.com/samanthaheartmatiga/market-etl-pipeline.git)
+git clone [https://github.com/samanthaheartmatiga/market-etl-pipeline.git]
 cd market-etl-pipeline
 
 ```

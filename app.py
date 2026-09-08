@@ -391,7 +391,7 @@ with nav_col_left:
     """, unsafe_allow_html=True)
 
 with nav_col_sync:
-    if st.button("Sync Telemetry", icon=":material/sync:", use_container_width=True):
+    if st.button("Sync Telemetry", icon=":material/sync:", width="stretch"):
         st.cache_data.clear()
 
 with nav_col_export:
@@ -402,7 +402,7 @@ with nav_col_export:
         data=excel_data,
         file_name="crypto_telemetry_report.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        use_container_width=True
+        width="stretch"
     )
 
 st.markdown('<div class="nav-divider"></div>', unsafe_allow_html=True)
@@ -487,7 +487,7 @@ if not view_df.empty:
                 paper_bgcolor="#1a1430",
                 font=dict(color="#FFFFFF")
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         else:
             st.info(f"Only 1 snapshot logged for {selected_symbol}. Consecutive runs will plot here.")
 
@@ -540,6 +540,6 @@ if not view_df.empty:
             "volume_to_mcap_ratio": st.column_config.NumberColumn("Vol / MCap", format="%.6f"),
             "last_snapshot_time": st.column_config.DatetimeColumn("Last Snapshot (UTC)", format="YYYY-MM-DD HH:mm:ss")
         },
-        use_container_width=True,
+        width="stretch",
         hide_index=True
     )
