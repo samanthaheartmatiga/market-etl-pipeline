@@ -521,10 +521,11 @@ if not view_df.empty:
 
     st.write("")
 
-    # System Analytical View Table Header
+    # System Analytical View Table Header (Clean inline flex layout)
     st.markdown(
-        '<div style="margin-bottom: 12px;">'
-        '### System Analytical View <span class="table-badge">view_crypto_rolling_metrics</span>'
+        '<div style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">'
+        '<span style="color: #CDF27E; font-weight: 800; font-size: 1.2rem;">System Analytical View</span>'
+        '<span class="table-badge">view_crypto_rolling_metrics</span>'
         '</div>', 
         unsafe_allow_html=True
     )
