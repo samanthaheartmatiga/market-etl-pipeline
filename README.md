@@ -87,11 +87,16 @@ market-etl-pipeline/
 
 ## 📊 Analytical View Definition
 
-The pipeline aggregates data inside PostgreSQL using analytical window functions:
+The pipeline aggregates data inside PostgreSQL using analytical window functions, strictly scoped to the latest batch execution:
 
 ```sql
 CREATE OR REPLACE VIEW view_crypto_rolling_metrics AS
-WITH ranked_snapshots AS (
+WITH latest_batch AS (
+    -- Identify the most recent batch execution timestamp
+    SELECT MAX(recorded_at) AS max_snapshot_time 
+    FROM crypto_price_history
+),
+ranked_snapshots AS (
     SELECT 
         coin_id,
         symbol,
@@ -99,29 +104,34 @@ WITH ranked_snapshots AS (
         total_volume,
         market_cap,
         recorded_at,
-        ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY recorded_at DESC) as rn,
+        ROW_NUMBER() OVER (
+            PARTITION BY symbol 
+            ORDER BY recorded_at DESC
+        ) AS rn,
         AVG(price) OVER (
             PARTITION BY symbol 
             ORDER BY recorded_at DESC 
             ROWS BETWEEN CURRENT ROW AND 23 FOLLOWING
-        ) as rolling_avg_price,
+        ) AS rolling_avg_price,
         STDDEV(price) OVER (
             PARTITION BY symbol 
             ORDER BY recorded_at DESC 
             ROWS BETWEEN CURRENT ROW AND 23 FOLLOWING
-        ) as rolling_volatility
+        ) AS rolling_volatility
     FROM crypto_price_history
 )
 SELECT 
-    coin_id,
-    symbol,
-    price AS latest_price,
-    ROUND(rolling_avg_price, 4) AS rolling_avg_price,
-    COALESCE(ROUND(rolling_volatility, 4), 0.0000) AS rolling_volatility,
-    ROUND((total_volume / NULLIF(market_cap, 0)), 6) AS volume_to_mcap_ratio,
-    recorded_at AS last_snapshot_time
-FROM ranked_snapshots
-WHERE rn = 1;
+    r.coin_id,
+    r.symbol,
+    r.price AS latest_price,
+    ROUND(r.rolling_avg_price, 4) AS rolling_avg_price,
+    COALESCE(ROUND(r.rolling_volatility, 4), 0.0000) AS rolling_volatility,
+    ROUND((r.total_volume / NULLIF(r.market_cap, 0)), 6) AS volume_to_mcap_ratio,
+    r.recorded_at AS last_snapshot_time
+FROM ranked_snapshots r
+JOIN latest_batch b 
+  ON r.recorded_at = b.max_snapshot_time
+WHERE r.rn = 1;
 
 ```
 

@@ -7,7 +7,12 @@ load_dotenv()
 def create_analytics_view():
     view_sql = """
     CREATE OR REPLACE VIEW view_crypto_rolling_metrics AS
-    WITH ranked_snapshots AS (
+    WITH latest_batch AS (
+        -- Identify the most recent batch execution timestamp
+        SELECT MAX(recorded_at) AS max_snapshot_time 
+        FROM crypto_price_history
+    ),
+    ranked_snapshots AS (
         SELECT 
             coin_id,
             symbol,
@@ -39,27 +44,30 @@ def create_analytics_view():
             ROW_NUMBER() OVER (
                 PARTITION BY coin_id 
                 ORDER BY recorded_at DESC
-            ) as recency_rank
+            ) AS recency_rank
         FROM crypto_price_history
     )
     SELECT 
-        coin_id,
-        symbol,
-        price AS latest_price,
-        ROUND(rolling_avg_price::numeric, 4) AS rolling_avg_price,
-        ROUND(COALESCE(rolling_price_volatility, 0)::numeric, 4) AS rolling_volatility,
-        volume_to_mcap_ratio,
-        recorded_at AS last_snapshot_time
-    FROM ranked_snapshots
-    WHERE recency_rank = 1;
+        r.coin_id,
+        r.symbol,
+        r.price AS latest_price,
+        ROUND(r.rolling_avg_price::numeric, 4) AS rolling_avg_price,
+        ROUND(COALESCE(r.rolling_price_volatility, 0)::numeric, 4) AS rolling_volatility,
+        r.volume_to_mcap_ratio,
+        r.recorded_at AS last_snapshot_time
+    FROM ranked_snapshots r
+    JOIN latest_batch b 
+      ON r.recorded_at = b.max_snapshot_time
+    WHERE r.recency_rank = 1;
     """
 
     conn = psycopg2.connect(
         host=os.getenv("DB_HOST", "localhost"),
-        port=os.getenv("DB_PORT", "5432"),
-        database=os.getenv("DB_NAME", "market_data"),
+        port=os.getenv("DB_PORT", "6543"),
+        database=os.getenv("DB_NAME", "postgres"),
         user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASSWORD", "etl_password")
+        password=os.getenv("DB_PASSWORD", ""),
+        sslmode="require" if os.getenv("DB_HOST") and "supabase.com" in os.getenv("DB_HOST") else "prefer"
     )
 
     with conn:
