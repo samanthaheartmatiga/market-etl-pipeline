@@ -8,8 +8,7 @@
 
 An end-to-end automated cryptocurrency ingestion engine and analytical telemetry dashboard. The system extracts top-market crypto data on a 10-minute cadence, runs schema and drift validation assertions, loads records idempotently into a cloud PostgreSQL data warehouse, computes rolling window analytics in SQL, and serves an interactive dashboard.
 
-🔗 **Live Production Dashboard:** [crypto-telemetry-pipeline.streamlit.app]
-
+🔗 **Live Production Dashboard:** [crypto-telemetry-pipeline.streamlit.app](https://crypto-telemetry-pipeline.streamlit.app)
 ---
 
 ## 🏗 System Architecture
