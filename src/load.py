@@ -11,7 +11,7 @@ def get_db_connection():
     return psycopg2.connect(
         host=os.getenv("DB_HOST", "localhost"),
         port=os.getenv("DB_PORT", "5432"),
-        database=os.getenv("DB_NAME", "market_data"),
+        database=os.getenv("DB_NAME", "postgres"),
         user=os.getenv("DB_USER", "postgres"),
         password=os.getenv("DB_PASSWORD", "etl_password")
     )
@@ -42,7 +42,8 @@ def init_db():
             market_cap NUMERIC(24, 2),
             total_volume NUMERIC(24, 2),
             recorded_at TIMESTAMPTZ NOT NULL,
-            ingested_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            ingested_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT uq_coin_snapshot UNIQUE (symbol, recorded_at)
         );
         """,
         # Index on historical table for fast time-series filtering
@@ -90,11 +91,12 @@ def upsert_records(records: list[CryptoMarketRecord]) -> int:
         for r in records
     ]
 
-    # 2. Append into history table
+    # 2. Append into history table (ignoring exact snapshot duplicates)
     history_query = """
     INSERT INTO crypto_price_history (
         coin_id, symbol, price, market_cap, total_volume, recorded_at
-    ) VALUES %s;
+    ) VALUES %s
+    ON CONFLICT (symbol, recorded_at) DO NOTHING;
     """
 
     history_data = [
