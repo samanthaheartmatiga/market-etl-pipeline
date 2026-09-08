@@ -234,15 +234,28 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Helper function to read from st.secrets (Cloud) or os.getenv (Local)
+def get_config(key: str, default: str = "") -> str:
+    try:
+        if hasattr(st, "secrets") and key in st.secrets:
+            return str(st.secrets[key])
+    except Exception:
+        pass
+    return os.getenv(key, default)
+
 # Database Engine
 @st.cache_resource
 def get_db_engine():
-    user = os.getenv("DB_USER", "postgres")
-    password = os.getenv("DB_PASSWORD", "etl_password")
-    host = os.getenv("DB_HOST", "localhost")
-    port = os.getenv("DB_PORT", "5432")
-    database = os.getenv("DB_NAME", "market_data")
-    return create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database}")
+    user = get_config("DB_USER", "postgres")
+    password = get_config("DB_PASSWORD", "etl_password")
+    host = get_config("DB_HOST", "localhost")
+    port = get_config("DB_PORT", "5432")
+    database = get_config("DB_NAME", "postgres")
+    
+    # Use sslmode=require for Supabase pooler connections
+    return create_engine(
+        f"postgresql://{user}:{password}@{host}:{port}/{database}?sslmode=require"
+    )
 
 engine = get_db_engine()
 
@@ -498,11 +511,11 @@ if not view_df.empty:
         st.markdown("""
         <div class="side-card" style="border-left-color: #6F4BF2;">
             <div class="side-card-title" style="color: #A38DF2;">Pipeline Engine Health</div>
-            <p><b>Orchestrator:</b> Windows Task Scheduler</p>
-            <p><b>Target Database:</b> PostgreSQL 16 (Local)</p>
-            <p><b>Circuit Breaker:</b> Active (< 50% Δ assertion)</p>
-            <p><b>Alert Protocol:</b> Slack Webhook (Block Kit)</p>
-            <p style="margin-bottom: 0;"><b>Idempotency:</b> ON CONFLICT DO UPDATE</p>
+            <p><b>Orchestrator:</b> GitHub Actions (Cron */10)</p>
+            <p><b>Target Database:</b> Supabase PostgreSQL (Cloud)</p>
+            <p><b>Circuit Breaker:</b> Active (&lt; 50% Δ assertion)</p>
+            <p><b>Ingestion Status:</b> Automated 24/7</p>
+            <p style="margin-bottom: 0;"><b>Idempotency:</b> ON CONFLICT DO NOTHING</p>
         </div>
         """, unsafe_allow_html=True)
 
